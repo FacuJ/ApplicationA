@@ -16,47 +16,35 @@ class AppSharedPreferences(context: Context) {
         const val NOTIFICATIONS = "NOTIFICATIONS"
     }
 
-    fun saveString(key: String, value: String) {
+    private fun saveString(key: String, value: String) {
         val editor = sharedPreferences.edit()
         editor.putString(key, value)
         editor.apply()
     }
 
-    fun saveBoolean(key: String, value: Boolean?) {
-        val editor = sharedPreferences.edit()
-        value?.let { editor.putBoolean(key, it) }
-        editor.apply()
-    }
-
-    fun saveInt(key: String, value: Int) {
-        val editor = sharedPreferences.edit()
-        editor.putInt(key, value)
-        editor.apply()
-    }
-
-    fun getString(key: String): String? {
+    private fun getString(key: String): String? {
         return sharedPreferences.getString(key, "")
     }
-
-    fun getBoolean(key: String): Boolean {
-        return sharedPreferences.getBoolean(key, false)
-    }
-
-    fun getInt(key: String): Int {
-        return sharedPreferences.getInt(key, -1)
-    }
+    /**
+     *Save the title and message of the notification if it's not the same as the previous one
+     */
 
     fun saveNotification(newNotification: String) {
         var notifications = getStoredNotifications()
         if (notifications == null) {
             notifications = ArrayList()
         }
-        notifications.add(newNotification)
+        if (notifications.size == 0) {
+            notifications.add(newNotification)
+        } else if (notifications.last() != newNotification) notifications.add(newNotification)
         val gson = Gson()
         val arrayGSON = gson.toJson(notifications)
         saveString(NOTIFICATIONS, arrayGSON)
     }
 
+    /**
+     * @return an ArrayList<String> of the stored notifications on App Shared preferences
+     */
     fun getStoredNotifications(): ArrayList<String>? {
         val g = Gson()
         val type = object : TypeToken<List<String>?>() {}.type
@@ -66,7 +54,9 @@ class AppSharedPreferences(context: Context) {
         }
         return ArrayList()
     }
-
+    /**
+     * Sets an empty ArrayList<String> on App Shared preferences
+     */
     fun clearStoredNotifications() {
         val notifications = ArrayList<String>()
         val gson = Gson()
