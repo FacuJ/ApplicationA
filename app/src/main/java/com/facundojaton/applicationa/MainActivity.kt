@@ -20,7 +20,6 @@ import com.facundojaton.applicationa.utils.sendNotification
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    // private var notificationBroadcastReceiver: NotificationBroadcastReceiver? = null
     private var enableNotificationListenerAlertDialog: AlertDialog? = null
 
     companion object {
@@ -34,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         checkIfApplicationBIsStartingForResult(intent)
-
         binding.btnUpdate.setOnClickListener {
             sendDataToApplicationB()
         }
@@ -54,19 +52,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Try stop/start your component service
+     */
+    private fun reconnect() {
+        val listenerService = Intent(this@MainActivity, NotificationListener::class.java)
+        listenerService.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        startService(listenerService)
+    }
+
+    /**
+     * Posts a Notification using the timestamp from the system as an identifier. This is a generic way to test
+     * the NotificationListener
+     */
     private fun sendTestNotification() {
         waitingMode(true)
         val notificationManager = ContextCompat.getSystemService(
             this,
             NotificationManager::class.java
         ) as NotificationManager
-        val timestamp = System.currentTimeMillis() / 1000
+        val timestamp = System.currentTimeMillis()
         notificationManager.sendNotification(
-            getString(R.string.notification_sent) + " with timestamp: $timestamp", this
+            getString(R.string.notification_posted) + " Timestamp: $timestamp", this
         )
         waitingMode(false)
     }
 
+    /**
+     * Sends the notification data to ApplicationB by starting its MainActivity.
+     * This is an alternative way to see the notification data on App B
+     */
     private fun sendDataToApplicationB() {
         val sendIntent: Intent = Intent().apply {
             action = "com.facundojaton.sharedata"
@@ -84,6 +99,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(sendIntent)
     }
 
+    /**
+     * Checks if the Activity is being started by the Application B.
+     * Sets the notification data and the result on the intent that is meant to be retrieved
+     * by Application B.
+     */
     private fun checkIfApplicationBIsStartingForResult(intent: Intent?) {
         if (intent?.action == "com.facundojaton.getdata") {
             Intent("com.facundojaton.getdata", Uri.parse("content://result_uri")).also { result ->
@@ -100,6 +120,8 @@ class MainActivity : AppCompatActivity() {
                 setResult(Activity.RESULT_OK, result)
             }
             finish()
+        } else {
+            reconnect()
         }
     }
 
@@ -131,7 +153,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     /**
-     * Build Notification Listener Alert Dialog.
      * Builds the alert dialog that pops up if the user has not turned
      * the Notification Listener Service on yet.
      * @return An alert dialog which leads to the notification enabling screen
@@ -139,7 +160,7 @@ class MainActivity : AppCompatActivity() {
     private fun buildNotificationServiceAlertDialog(): AlertDialog {
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle(R.string.listen_to_notifications)
-        alertDialogBuilder.setMessage("Select which notifications do you want to listen and store")
+        alertDialogBuilder.setMessage("Select which notifications you want to listen and store")
         alertDialogBuilder.setPositiveButton(getString(R.string.ok)) { dialog, id ->
             startActivity(
                 Intent(
@@ -153,6 +174,9 @@ class MainActivity : AppCompatActivity() {
         return alertDialogBuilder.create()
     }
 
+    /**
+     * Enables and disables the buttons on the layout to prevent multiple taps
+     */
     private fun waitingMode(isWaiting: Boolean) {
         binding.apply {
             btnClearSP.isEnabled = !isWaiting
@@ -160,9 +184,4 @@ class MainActivity : AppCompatActivity() {
             btnSendNotification.isEnabled = !isWaiting
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
 }

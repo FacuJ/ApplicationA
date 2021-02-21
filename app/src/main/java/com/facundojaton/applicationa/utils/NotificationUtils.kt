@@ -8,22 +8,15 @@ import androidx.core.app.NotificationCompat
 import com.facundojaton.applicationa.MainActivity
 import com.facundojaton.applicationa.R
 
-private val NOTIFICATION_ID = 1
-private val REQUEST_CODE = 0
-private val FLAGS = 0
-
-// TODO: Step 1.1 extension function to send messages (GIVEN)
+private val NOTIFICATION_ID = 0
 /**
+ * Extension function to send messages.
  * Builds and delivers the notification.
- *
- * @param context, activity context.
  */
 fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context) {
-    // Create the content intent for the notification, which launches
-    // this activity
-    // TODO: Step 1.11 create intent
+    // Create the content intent for the notification, which launches this activity
     val contentIntent = Intent(applicationContext, MainActivity::class.java)
-    // TODO: Step 1.12 create PendingIntent
+
     val contentPendingIntent = PendingIntent.getActivity(
         applicationContext,
         NOTIFICATION_ID,
@@ -31,7 +24,6 @@ fun NotificationManager.sendNotification(messageBody: String, applicationContext
         PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-    // TODO: Step 1.2 get an instance of NotificationCompat.Builder
     // Build the notification
     val builder = NotificationCompat.Builder(
         applicationContext,
@@ -45,8 +37,4 @@ fun NotificationManager.sendNotification(messageBody: String, applicationContext
         .setAutoCancel(true)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
     notify(NOTIFICATION_ID, builder.build())
-}
-
-fun NotificationManager.cancelNotifications() {
-    cancelAll()
 }
