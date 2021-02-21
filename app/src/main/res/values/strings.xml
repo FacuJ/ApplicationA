@@ -10,4 +10,8 @@
     <string name="save_shared_preferences">Save on SP</string>
     <string name="service_name">AService</string>
     <string name="clear_shared_preferences">Clear SP</string>
+    <string name="listen_to_notifications">Listen to notifications</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="listener_inactive">You are not listening notifications</string>
 </resources>

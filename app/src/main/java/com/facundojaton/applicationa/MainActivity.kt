@@ -4,9 +4,9 @@ import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.*
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.provider.Settings
 import android.text.TextUtils
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.facundojaton.applicationa.databinding.ActivityMainBinding
@@ -46,11 +46,15 @@ class MainActivity : AppCompatActivity() {
         binding.buttonUpdate.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = "com.facundojaton.sharedata"
-                putExtra(Intent.EXTRA_TEXT, "This is my text to send.")
                 type = "*/*"
                 val data = ArrayList<String>()
-                data.add("Facundo")
-                data.add("Pass")
+                val storedNotifications =
+                    AppSharedPreferences(this@MainActivity).getStoredNotifications()
+                if (!storedNotifications.isNullOrEmpty()) {
+                    for (notification in storedNotifications) {
+                        data.add(notification)
+                    }
+                } else data.add("There aren't notifications to retrieve")
                 putExtra("Object", data)
             }
             startActivity(sendIntent)
@@ -152,18 +156,17 @@ class MainActivity : AppCompatActivity() {
      */
     private fun buildNotificationServiceAlertDialog(): AlertDialog {
         val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle(R.string.service_name)
-        alertDialogBuilder.setMessage("message from dialog")
-        alertDialogBuilder.setPositiveButton("Yes") { dialog, id ->
+        alertDialogBuilder.setTitle(R.string.listen_to_notifications)
+        alertDialogBuilder.setMessage("Select which notifications do you want to listen and store")
+        alertDialogBuilder.setPositiveButton(getString(R.string.ok)) { dialog, id ->
             startActivity(
                 Intent(
                     ACTION_NOTIFICATION_LISTENER_SETTINGS
                 )
             )
         }
-        alertDialogBuilder.setNegativeButton("No") { dialog, id ->
-            // If you choose to not enable the notification listener
-            // the app. will not work as expected
+        alertDialogBuilder.setNegativeButton(getString(R.string.cancel)) { dialog, id ->
+            Toast.makeText(this, getString(R.string.listener_inactive), Toast.LENGTH_SHORT).show()
         }
         return alertDialogBuilder.create()
     }
