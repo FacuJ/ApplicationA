@@ -17,4 +17,5 @@
     <string name="update_application_b">Update app B</string>
     <string name="reconnect">Reconnect</string>
     <string name="kill_listener">Kill listener</string>
+    <string name="error_launching_application_b">Application B can\'t be started, check if it is installed</string>
 </resources>

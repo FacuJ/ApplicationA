@@ -96,7 +96,17 @@ class MainActivity : AppCompatActivity() {
             } else data.add("There aren't notifications to retrieve")
             putExtra("Object", data)
         }
-        startActivity(sendIntent)
+        try {
+            startActivity(sendIntent)
+        } catch (e: Exception) {
+            onErrorLaunchingApplicationB()
+        }
+
+    }
+
+    private fun onErrorLaunchingApplicationB() {
+        Toast.makeText(this, getString(R.string.error_launching_application_b), Toast.LENGTH_SHORT)
+            .show()
     }
 
     /**
