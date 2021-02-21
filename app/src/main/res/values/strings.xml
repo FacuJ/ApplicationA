@@ -4,7 +4,7 @@
     <string name="notification_channel_general_name">General Channel</string>
     <string name="notification_channel_general_description">Channel description</string>
     <string name="notification_sent">Notification was sent!!</string>
-    <string name="notification_title">Notification Title</string>
+    <string name="notification_title">Test notification Title</string>
     <string name="alarm">Alarm</string>
     <string name="send_notification">Send notification</string>
     <string name="save_shared_preferences">Save on SP</string>
@@ -14,4 +14,5 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="listener_inactive">You are not listening notifications</string>
+    <string name="update_application_b">Update app B</string>
 </resources>

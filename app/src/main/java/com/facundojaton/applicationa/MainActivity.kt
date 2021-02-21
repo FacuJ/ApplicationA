@@ -1,8 +1,10 @@
 package com.facundojaton.applicationa
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.*
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
@@ -18,7 +20,7 @@ import com.facundojaton.applicationa.utils.sendNotification
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var imageChangeBroadcastReceiver: ImageChangeBroadcastReceiver? = null
+    // private var notificationBroadcastReceiver: NotificationBroadcastReceiver? = null
     private var enableNotificationListenerAlertDialog: AlertDialog? = null
 
     companion object {
@@ -31,51 +33,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val rs = contentResolver.query(
-            AProvider.CONTENT_URI,
-            arrayOf(AProvider._ID, AProvider.NAME, AProvider.MEANING), null, null, null
-        )
+        checkIfApplicationBIsStartingForResult(intent)
 
-        binding.buttonNext.setOnClickListener {
-            if (rs?.moveToNext()!!) {
-                binding.etName.setText(rs.getString(1))
-                binding.etMeaning.setText(rs.getString(2))
-            }
+        binding.btnUpdate.setOnClickListener {
+            sendDataToApplicationB()
         }
 
-        binding.buttonUpdate.setOnClickListener {
-            val sendIntent: Intent = Intent().apply {
-                action = "com.facundojaton.sharedata"
-                type = "*/*"
-                val data = ArrayList<String>()
-                val storedNotifications =
-                    AppSharedPreferences(this@MainActivity).getStoredNotifications()
-                if (!storedNotifications.isNullOrEmpty()) {
-                    for (notification in storedNotifications) {
-                        data.add(notification)
-                    }
-                } else data.add("There aren't notifications to retrieve")
-                putExtra("Object", data)
-            }
-            startActivity(sendIntent)
-        }
-
-        binding.buttonPrevious.setOnClickListener {
-            if (rs?.moveToPrevious()!!) {
-                binding.etName.setText(rs.getString(1))
-                binding.etMeaning.setText(rs.getString(2))
-            }
-        }
-
-        binding.button.setOnClickListener {
-            val notificationManager = ContextCompat.getSystemService(
-                this,
-                NotificationManager::class.java
-            ) as NotificationManager
-            val timestamp = System.currentTimeMillis() / 1000
-            notificationManager.sendNotification(
-                getString(R.string.notification_sent) + " with timestamp: $timestamp", this
-            )
+        binding.btnSendNotification.setOnClickListener {
+            sendTestNotification()
         }
 
         binding.btnClearSP.setOnClickListener {
@@ -87,24 +52,54 @@ class MainActivity : AppCompatActivity() {
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog()
             enableNotificationListenerAlertDialog?.show()
         }
-
-        // Finally we register a receiver to tell the MainActivity when a notification has been received
-        imageChangeBroadcastReceiver = ImageChangeBroadcastReceiver()
-        val intentFilter = IntentFilter()
-        intentFilter.addAction("com.facundojaton.applicationa")
-        registerReceiver(imageChangeBroadcastReceiver, intentFilter)
     }
 
-    /**
-     * Change Intercepted Notification Image
-     * Changes the MainActivity image based on which notification was intercepted
-     * @param notificationCode The intercepted notification code
-     */
-    private fun changeInterceptedNotificationImage(notificationCode: Int) {
-        if (notificationCode == NotificationListener.InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE) {
-            binding.textView.text = "Notification Received"
-        } else {
-            binding.textView.text = "Notification Received but couldn't handle it very well"
+    private fun sendTestNotification() {
+        waitingMode(true)
+        val notificationManager = ContextCompat.getSystemService(
+            this,
+            NotificationManager::class.java
+        ) as NotificationManager
+        val timestamp = System.currentTimeMillis() / 1000
+        notificationManager.sendNotification(
+            getString(R.string.notification_sent) + " with timestamp: $timestamp", this
+        )
+        waitingMode(false)
+    }
+
+    private fun sendDataToApplicationB() {
+        val sendIntent: Intent = Intent().apply {
+            action = "com.facundojaton.sharedata"
+            type = "*/*"
+            val data = ArrayList<String>()
+            val storedNotifications =
+                AppSharedPreferences(this@MainActivity).getStoredNotifications()
+            if (!storedNotifications.isNullOrEmpty()) {
+                for (notification in storedNotifications) {
+                    data.add(notification)
+                }
+            } else data.add("There aren't notifications to retrieve")
+            putExtra("Object", data)
+        }
+        startActivity(sendIntent)
+    }
+
+    private fun checkIfApplicationBIsStartingForResult(intent: Intent?) {
+        if (intent?.action == "com.facundojaton.getdata") {
+            Intent("com.facundojaton.getdata", Uri.parse("content://result_uri")).also { result ->
+                result.type = "*/*"
+                val data = ArrayList<String>()
+                val storedNotifications =
+                    AppSharedPreferences(this@MainActivity).getStoredNotifications()
+                if (!storedNotifications.isNullOrEmpty()) {
+                    for (notification in storedNotifications) {
+                        data.add(notification)
+                    }
+                } else data.add("There aren't notifications to retrieve")
+                result.putExtra("Object", data)
+                setResult(Activity.RESULT_OK, result)
+            }
+            finish()
         }
     }
 
@@ -136,19 +131,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     /**
-     * Image Change Broadcast Receiver.
-     * We use this Broadcast Receiver to notify the Main Activity when
-     * a new notification has arrived, so it can properly change the
-     * notification image
-     */
-    inner class ImageChangeBroadcastReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent) {
-            val receivedNotificationCode = intent.getIntExtra("Notification Code", -1)
-            changeInterceptedNotificationImage(receivedNotificationCode)
-        }
-    }
-
-    /**
      * Build Notification Listener Alert Dialog.
      * Builds the alert dialog that pops up if the user has not turned
      * the Notification Listener Service on yet.
@@ -171,9 +153,16 @@ class MainActivity : AppCompatActivity() {
         return alertDialogBuilder.create()
     }
 
+    private fun waitingMode(isWaiting: Boolean) {
+        binding.apply {
+            btnClearSP.isEnabled = !isWaiting
+            btnUpdate.isEnabled = !isWaiting
+            btnSendNotification.isEnabled = !isWaiting
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(imageChangeBroadcastReceiver)
     }
 
 }
