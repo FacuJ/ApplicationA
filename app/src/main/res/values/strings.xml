@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Application A</string>
+    <string name="notification_channel_general_id">general_channel</string>
+    <string name="notification_channel_general_name">General Channel</string>
+    <string name="notification_channel_general_description">Channel description</string>
+    <string name="notification_sent">Notification was sent!!</string>
+    <string name="notification_title">Notification Title</string>
+    <string name="alarm">Alarm</string>
+    <string name="send_notification">Send notification</string>
+    <string name="save_shared_preferences">Save on SP</string>
+    <string name="service_name">AService</string>
+</resources>
