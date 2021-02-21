@@ -4,12 +4,14 @@ import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.*
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.provider.Settings
 import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.facundojaton.applicationa.databinding.ActivityMainBinding
 import com.facundojaton.applicationa.services.NotificationListener
+import com.facundojaton.applicationa.utils.AppSharedPreferences
 import com.facundojaton.applicationa.utils.sendNotification
 
 
@@ -72,8 +74,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        binding.button2.setOnClickListener {
-
+        binding.btnClearSP.setOnClickListener {
+            AppSharedPreferences(applicationContext).clearStoredNotifications()
         }
 
         // If the user did not turn the notification listener service on we prompt him to do so
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity() {
      * @param notificationCode The intercepted notification code
      */
     private fun changeInterceptedNotificationImage(notificationCode: Int) {
-        if (notificationCode == NotificationListener.InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE){
+        if (notificationCode == NotificationListener.InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE) {
             binding.textView.text = "Notification Received"
         } else {
             binding.textView.text = "Notification Received but couldn't handle it very well"
@@ -165,6 +167,7 @@ class MainActivity : AppCompatActivity() {
         }
         return alertDialogBuilder.create()
     }
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(imageChangeBroadcastReceiver)

@@ -9,4 +9,5 @@
     <string name="send_notification">Send notification</string>
     <string name="save_shared_preferences">Save on SP</string>
     <string name="service_name">AService</string>
+    <string name="clear_shared_preferences">Clear SP</string>
 </resources>
